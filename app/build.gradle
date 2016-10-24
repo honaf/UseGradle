@@ -1,0 +1,67 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "com.honaf.usegradle"
+        minSdkVersion 14
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        wcf {
+            storeFile file(System.properties['keyStore'])
+            storePassword "wuchaofan"
+            keyAlias project.property('wcf.keyAlias')
+            keyPassword pKeyAliasPassword
+        }
+    }
+
+    buildTypes {
+        release {
+            buildConfigField "boolean", "logDebug", "false"
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            buildConfigField "boolean", "logDebug", "true"
+        }
+
+        wcf {
+            buildConfigField "boolean", "logDebug", "true"
+            applicationIdSuffix ".wcf"
+            signingConfig signingConfigs.wcf
+        }
+    }
+
+    productFlavors {
+        "360" {
+            manifestPlaceholders = [CHANNEL_VALUE: name]
+        }
+        "应用宝" {
+            manifestPlaceholders = [CHANNEL_VALUE: name]
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            if(output.outputFile != null && output.outputFile.name.endsWith('.apk') && 'release'.equals(variant.buildType.name)) {
+                def apkFile = new File(output.outputFile.getParent(),"honaf_${variant.flavorName}_ver${variant.versionName}.apk");
+                output.outputFile = apkFile;
+            }
+        }
+
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.2.0'
+}
